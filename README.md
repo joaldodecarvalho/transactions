@@ -1,8 +1,5 @@
 # Transactions
 
----
-#[![Build Status](https://travis-ci.org/pismo/bolt.svg?branch=master)](https://travis-ci.org/pismo/bolt)
-
 _Technologies used_
 
 - Java 11
