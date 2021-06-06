@@ -13,7 +13,7 @@ _Technologies used_
 
 ## Run Application
 
-To start the transactions is required have [Docker](https://docs.docker.com/engine/install/) installed.
+To start the project `transactions` is required have [Docker](https://docs.docker.com/engine/install/) installed.
 
 Then, simply run: [sh start-docker-application.sh](./start-docker-application.sh)
 
