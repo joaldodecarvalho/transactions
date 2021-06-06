@@ -21,7 +21,7 @@ Followed the steps, the application is avaliable in `localhost:8080/`
 
 ## Database
 
-After start up application the database is avaliable on `localhost:8080/h2-console/` with the params:
+After start up application the database is avaliable on `localhost:8080/h2-console/` use the params to access:
 - Driver Class: `org.h2.Driver`
 - JDBC URL: `jdbc:h2:mem:transactions`
 - User Name: `root`
