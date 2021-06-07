@@ -13,7 +13,7 @@ _Technologies used_
 
 ## Run Application
 
-To start the transactions is required have [Docker](https://docs.docker.com/engine/install/) installed.
+To start the project `transactions` is required have [Docker](https://docs.docker.com/engine/install/) installed.
 
 Then, simply run: [sh start-docker-application.sh](./start-docker-application.sh)
 
@@ -21,7 +21,7 @@ Followed the steps, the application is avaliable in `localhost:8080/`
 
 ## Database
 
-After start up application the database is avaliable on `localhost:8080/h2-console/` with the params:
+After start up application the database is avaliable on `localhost:8080/h2-console/` use the params to access:
 - Driver Class: `org.h2.Driver`
 - JDBC URL: `jdbc:h2:mem:transactions`
 - User Name: `root`
