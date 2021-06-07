@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import pismo.io.transactions.domain.Transaction;
 import pismo.io.transactions.dto.TransactionDTO;
+import pismo.io.transactions.repository.TransactionRepository;
 import pismo.io.transactions.service.TransactionService;
 
 @SpringBootTest
@@ -31,6 +32,9 @@ public class TransactionResourceTest {
 
 	@MockBean
 	private static TransactionService service;
+
+	@MockBean
+	private static TransactionRepository repository;
 
 	@Autowired
 	private MockMvc mockMvc;

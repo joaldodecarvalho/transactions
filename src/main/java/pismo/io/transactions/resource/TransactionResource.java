@@ -25,5 +25,4 @@ public class TransactionResource {
 
 		return ResponseEntity.ok(service.save(Transaction.ofDTO(transactionDTO)).getId());
 	}
-
 }

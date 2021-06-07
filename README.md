@@ -36,10 +36,11 @@ YAML example:
 ```yaml
 openapi: 3.0.1
 info:
-  title: Transactions API
+  title: OpenAPI definition
   version: v0
 servers:
 - url: http://localhost:8080
+  description: Generated server url
 paths:
   /transactions:
     post:
@@ -98,6 +99,25 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Account'
+  /accounts/avaliable-credit/{accountId}:
+    get:
+      tags:
+      - account-resource
+      operationId: getAvaliableCredit
+      parameters:
+      - name: accountId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: number
 components:
   schemas:
     TransactionDTO:
@@ -117,6 +137,7 @@ components:
           type: number
     Account:
       required:
+      - avaliableCreditLimit
       - documentNumber
       type: object
       properties:
@@ -125,6 +146,8 @@ components:
           format: int64
         documentNumber:
           type: string
+        avaliableCreditLimit:
+          type: number
 ``` 
 
 

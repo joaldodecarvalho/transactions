@@ -1,5 +1,7 @@
 package pismo.io.transactions.repository;
 
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +20,14 @@ public class AccountRepositoryTest {
 
 		Account account = new Account();
 		account.setDocumentNumber("068897098505");
+		account.setAvaliableCreditLimit(BigDecimal.TEN);
 
 		Account saved = repository.save(account);
 
 		Assertions.assertNotNull(saved);
 		Assertions.assertNotNull(saved.getId());
 		Assertions.assertEquals(saved.getDocumentNumber(), account.getDocumentNumber());
+		Assertions.assertEquals(saved.getAvaliableCreditLimit(), account.getAvaliableCreditLimit());
 	}
 
 }

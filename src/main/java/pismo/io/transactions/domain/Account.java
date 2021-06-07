@@ -1,5 +1,7 @@
 package pismo.io.transactions.domain;
 
+import java.math.BigDecimal;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -26,6 +28,10 @@ public class Account {
 	@NotNull
 	@Column(name = "document_number")
 	private String documentNumber;
+
+	@NotNull
+	@Column(name = "avaliable_credit_limit")
+	private BigDecimal avaliableCreditLimit;
 
 	public static Account of(Long id) {
 		Account account = new Account();

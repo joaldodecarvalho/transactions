@@ -1,5 +1,6 @@
 package pismo.io.transactions.validator;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import javax.persistence.EntityManager;
@@ -24,6 +25,21 @@ public class TransactionValidator {
 		validAccount(transaction.getAccount().getId());
 		validOperationType(transaction.getOperationType().getId());
 		validAmountByOperation(transaction);
+		validCreditLimit(transaction);
+	}
+
+	private void validCreditLimit(Transaction transaction) {
+
+		Account account = entityManager.find(Account.class, transaction.getAccount().getId());
+
+		transaction.setAccount(account);
+
+		if (!transaction.isPagamento()
+				&& account.getAvaliableCreditLimit().add(transaction.getAmount()).compareTo(BigDecimal.ZERO) < 0) {
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+					"O valor da transação deve ser menor ou igual ao crédito da conta.");
+		}
+
 	}
 
 	private void validAccount(Long accountId) {

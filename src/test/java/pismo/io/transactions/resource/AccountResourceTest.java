@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -59,4 +60,19 @@ public class AccountResourceTest {
 		verify(repository, times(1)).findById(-1L);
 		verifyNoMoreInteractions(repository);
 	}
+
+	@Test
+	@SneakyThrows
+	public void avaliableCreditLimit() {
+
+		Account account = Account.of(1L);
+		account.setAvaliableCreditLimit(BigDecimal.TEN);
+
+		given(repository.findById(1L)).willReturn(Optional.of(account));
+
+		mockMvc.perform(get("/accounts/avaliable-credit/1")).andExpect(status().isOk());
+
+		verify(repository, times(1)).findById(1L);
+	}
+
 }
