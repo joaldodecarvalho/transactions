@@ -40,6 +40,8 @@ public class TransactionServiceTest {
 
 		Transaction transaction = new Transaction();
 		transaction.setId(1L);
+		transaction.setAmount(BigDecimal.TEN);
+		transaction.setAccount(Account.of(1L));
 
 		service.save(transaction);
 
