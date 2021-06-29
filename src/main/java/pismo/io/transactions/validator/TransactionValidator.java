@@ -1,6 +1,8 @@
 package pismo.io.transactions.validator;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import javax.persistence.EntityManager;
@@ -13,6 +15,7 @@ import lombok.AllArgsConstructor;
 import pismo.io.transactions.domain.Account;
 import pismo.io.transactions.domain.OperationType;
 import pismo.io.transactions.domain.Transaction;
+import rx.Observable;
 
 @Component
 @AllArgsConstructor
@@ -20,53 +23,68 @@ public class TransactionValidator {
 
 	private final EntityManager entityManager;
 
-	public void validate(Transaction transaction) {
+	public List<Observable<Object>> validate(Transaction transaction) {
 
-		validAccount(transaction.getAccount().getId());
-		validOperationType(transaction.getOperationType().getId());
-		validAmountByOperation(transaction);
-		validCreditLimit(transaction);
+		Observable<Object> validAccount = validAccount(transaction.getAccount().getId());
+		Observable<Object> validOperationType = validOperationType(transaction.getOperationType().getId());
+		Observable<Object> validAmountByOperation = validAmountByOperation(transaction);
+		Observable<Object> validCreditLimit = validCreditLimit(transaction);
+
+		return Arrays.asList(validAccount, validOperationType, validAmountByOperation, validCreditLimit);
 	}
 
-	private void validCreditLimit(Transaction transaction) {
+	private Observable<Object> validAccount(Long accountId) {
 
-		Account account = entityManager.find(Account.class, transaction.getAccount().getId());
+		return Observable.just(accountId).flatMap(id -> Optional.ofNullable(entityManager.find(Account.class, id))
+				.map(a -> Observable.empty()).orElse(Observable.error(
+						new ResponseStatusException(HttpStatus.NOT_FOUND, "Não foi encontrado a conta " + accountId))));
+	}
 
-		transaction.setAccount(account);
+	private Observable<Object> validCreditLimit(Transaction transaction) {
 
-		if (!transaction.isPagamento()
-				&& account.getAvaliableCreditLimit().add(transaction.getAmount()).compareTo(BigDecimal.ZERO) < 0) {
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
-					"O valor da transação deve ser menor ou igual ao crédito da conta.");
-		}
+		return Observable.just(transaction).flatMap(t -> {
+
+			Account account = entityManager.find(Account.class, t.getAccount().getId());
+
+			t.setAccount(account);
+
+			if (!transaction.isPagamento()
+					&& account.getAvaliableCreditLimit().add(transaction.getAmount()).compareTo(BigDecimal.ZERO) < 0) {
+				return Observable.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+						"O valor da transação deve ser menor ou igual ao crédito da conta."));
+			} else {
+				return Observable.empty();
+			}
+		});
 
 	}
 
-	private void validAccount(Long accountId) {
+	private Observable<Object> validOperationType(Long operationTypeId) {
 
-		Optional.ofNullable(entityManager.find(Account.class, accountId)).orElseThrow(
-				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Não foi encontrado a conta " + accountId));
+		return Observable.just(operationTypeId)
+				.flatMap(id -> Optional.ofNullable(entityManager.find(OperationType.class, id))
+						.map(a -> Observable.empty())
+						.orElse(Observable.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+								"Não foi encontrado a operação " + operationTypeId))));
 	}
 
-	private void validOperationType(Long operationTypeId) {
+	private Observable<Object> validAmountByOperation(Transaction transaction) {
 
-		Optional.ofNullable(entityManager.find(OperationType.class, operationTypeId))
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-						"Não foi encontrado a operação " + operationTypeId));
-	}
+		return Observable.just(transaction).flatMap(t -> {
 
-	private void validAmountByOperation(Transaction transaction) {
+			Boolean amountIsPositive = t.amountIsPositive();
+			Boolean isPagamento = t.getOperationType().isPagamento();
 
-		Boolean amountIsPositive = transaction.amountIsPositive();
-		Boolean isPagamento = transaction.getOperationType().isPagamento();
-
-		if (amountIsPositive && !isPagamento) {
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
-					"Para transações de saque ou compra o valor deve ser negativo");
-		} else if (!amountIsPositive && isPagamento) {
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
-					"Para transações de pagamento o valor deve ser positivo");
-		}
+			if (amountIsPositive && !isPagamento) {
+				return Observable.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+						"Para transações de saque ou compra o valor deve ser negativo"));
+			} else if (!amountIsPositive && isPagamento) {
+				return Observable.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+						"Para transações de pagamento o valor deve ser positivo"));
+			} else {
+				return Observable.empty();
+			}
+		});
 
 	}
 

@@ -3,7 +3,6 @@ package pismo.io.transactions.resource;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,10 +10,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import lombok.AllArgsConstructor;
 import pismo.io.transactions.domain.Account;
 import pismo.io.transactions.repository.AccountRepository;
+import rx.Observable;
 
 @RestController
 @RequestMapping("/accounts")
@@ -24,24 +25,34 @@ public class AccountResource {
 	private final AccountRepository repository;
 
 	@PostMapping
-	public ResponseEntity<Long> post(@RequestBody Account account) {
+	public DeferredResult<Long> post(@RequestBody Account account) {
 
-		return ResponseEntity.ok(repository.save(account).getId());
+		DeferredResult<Long> output = new DeferredResult<>();
+		Observable.just(repository.save(account)).subscribe(a -> {
+			output.setResult(a.getId());
+		});
+		return output;
 	}
 
 	@GetMapping("/{accountId}")
-	public ResponseEntity<Optional<Account>> findById(@PathVariable("accountId") Long id) {
+	public DeferredResult<Optional<Account>> findById(@PathVariable("accountId") Long id) {
 
-		return ResponseEntity.ok(repository.findById((id)));
+		DeferredResult<Optional<Account>> output = new DeferredResult<>();
+		Observable.just(repository.findById(id)).subscribe(a -> {
+			output.setResult(a);
+		});
+		return output;
 	}
 
 	@GetMapping("/avaliable-credit/{accountId}")
-	public ResponseEntity<BigDecimal> getAvaliableCredit(@PathVariable("accountId") Long id) {
+	public DeferredResult<BigDecimal> getAvaliableCredit(@PathVariable("accountId") Long id) {
 
-		BigDecimal avaliableCredit = repository.findById(id).map(Account::getAvaliableCreditLimit)
-				.orElseThrow(() -> new RestClientException("Conta não encontrada"));
-
-		return ResponseEntity.ok(avaliableCredit);
+		DeferredResult<BigDecimal> output = new DeferredResult<>();
+		Observable.just(repository.findById(id)).subscribe(a -> {
+			output.setResult(a.map(Account::getAvaliableCreditLimit)
+					.orElseThrow(() -> new RestClientException("Conta não encontrada")));
+		});
+		return output;
 	}
 
 }

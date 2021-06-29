@@ -1,6 +1,5 @@
 package pismo.io.transactions.resource;
 
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -48,7 +47,7 @@ public class TransactionResourceTest {
 
 		final TransactionDTO dto = new TransactionDTO(1L, 1L, BigDecimal.TEN);
 
-		given(service.save(transaction)).willReturn(transaction);
+		// given(service.save(transaction)).willReturn(transaction);
 
 		mockMvc.perform(post("/transactions").contentType(MediaType.APPLICATION_JSON)
 				.content(new ObjectMapper().writeValueAsString(dto))).andExpect(status().isOk());

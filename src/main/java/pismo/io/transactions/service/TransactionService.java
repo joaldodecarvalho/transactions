@@ -12,6 +12,7 @@ import pismo.io.transactions.domain.Transaction;
 import pismo.io.transactions.repository.AccountRepository;
 import pismo.io.transactions.repository.TransactionRepository;
 import pismo.io.transactions.validator.TransactionValidator;
+import rx.Observable;
 
 @Service
 @AllArgsConstructor
@@ -22,15 +23,15 @@ public class TransactionService {
 	private final TransactionValidator validator;
 	private final AccountRepository accountRepository;
 
-	public Transaction save(Transaction transaction) {
+	public Observable<Transaction> save(Transaction transaction) {
 
-		validator.validate(transaction);
+		return Observable.just(transaction).doOnNext(t -> validator.validate(t).forEach(Observable::subscribe))
+				.flatMap(t -> {
+					repository.save(t);
 
-		repository.save(transaction);
-
-		afterSave(transaction);
-
-		return transaction;
+					afterSave(t);
+					return Observable.just(t);
+				});
 	}
 
 	private void afterSave(Transaction transaction) {
